@@ -7,7 +7,7 @@ from app.config import settings
 # embedding model this service will use once ingestion is implemented.
 EMBEDDING_SIZE = 384
 
-client = QdrantClient(url=settings.qdrant_url)
+client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key or None)
 
 
 def ensure_collection() -> None:

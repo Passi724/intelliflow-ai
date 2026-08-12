@@ -6,6 +6,9 @@ class Settings(BaseSettings):
 
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "intelliflow-documents"
+    # Empty locally (unauthenticated docker-compose instance); required for
+    # Qdrant Cloud in deployment.
+    qdrant_api_key: str = ""
 
     # Chat generation backend: "ollama" (local, free, default for dev) or
     # "groq" (hosted, free tier - used in deployment since Ollama needs more
