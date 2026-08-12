@@ -56,6 +56,36 @@ export interface MeResponse {
   role: string;
 }
 
+export interface DocumentSummary {
+  id: string;
+  filename: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedByEmail: string;
+  createdAt: string;
+}
+
+async function uploadDocument(file: File): Promise<DocumentSummary> {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_URL}/api/documents`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new ApiError(res.status, body?.message ?? "Something went wrong");
+  }
+
+  return res.json();
+}
+
 export const api = {
   register: (data: RegisterRequest) =>
     request<AuthResponse>("/api/auth/register", {
@@ -70,4 +100,8 @@ export const api = {
     }),
 
   me: () => request<MeResponse>("/api/auth/me"),
+
+  listDocuments: () => request<DocumentSummary[]>("/api/documents"),
+
+  uploadDocument,
 };
