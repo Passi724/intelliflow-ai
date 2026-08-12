@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.qdrant import ensure_collection
-from app.routers import documents, health
+from app.routers import chat, documents, health
 
 
 @asynccontextmanager
@@ -25,3 +25,4 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(documents.router)
+app.include_router(chat.router)

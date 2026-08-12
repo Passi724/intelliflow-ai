@@ -3,10 +3,12 @@ package com.intelliflow.backend.service;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.http.HttpClient;
 import java.util.List;
@@ -54,6 +56,27 @@ public class AiServiceClient {
         return response != null ? response.results() : List.of();
     }
 
+    public ChatResponse chat(String query, int topK) {
+        try {
+            ChatResponse response = restClient.post()
+                    .uri("/api/chat")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ChatRequest(query, topK))
+                    .retrieve()
+                    .body(ChatResponse.class);
+
+            if (response == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "The assistant returned no response.");
+            }
+            return response;
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Chat request to ai-service failed: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "The assistant is unavailable right now.");
+        }
+    }
+
     private record IngestRequest(
             @JsonProperty("document_id") String documentId,
             String filename,
@@ -74,5 +97,20 @@ public class AiServiceClient {
     }
 
     private record SearchResponse(List<SearchResult> results) {
+    }
+
+    private record ChatRequest(
+            String query,
+            @JsonProperty("top_k") int topK) {
+    }
+
+    public record ChatSource(
+            @JsonProperty("document_id") String documentId,
+            String filename,
+            @JsonProperty("chunk_index") int chunkIndex,
+            double score) {
+    }
+
+    public record ChatResponse(String answer, List<ChatSource> sources) {
     }
 }

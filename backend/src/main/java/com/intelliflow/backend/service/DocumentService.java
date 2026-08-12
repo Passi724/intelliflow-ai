@@ -1,5 +1,7 @@
 package com.intelliflow.backend.service;
 
+import com.intelliflow.backend.dto.ChatAnswerResponse;
+import com.intelliflow.backend.dto.ChatSourceResponse;
 import com.intelliflow.backend.dto.DocumentResponse;
 import com.intelliflow.backend.dto.SearchResultResponse;
 import com.intelliflow.backend.entity.Document;
@@ -57,6 +59,16 @@ public class DocumentService {
         return aiServiceClient.search(query, 5).stream()
                 .map(r -> new SearchResultResponse(r.documentId(), r.filename(), r.chunkIndex(), r.text(), r.score()))
                 .collect(Collectors.toList());
+    }
+
+    public ChatAnswerResponse chat(String query) {
+        AiServiceClient.ChatResponse response = aiServiceClient.chat(query, 5);
+
+        List<ChatSourceResponse> sources = response.sources().stream()
+                .map(s -> new ChatSourceResponse(s.documentId(), s.filename(), s.chunkIndex(), s.score()))
+                .collect(Collectors.toList());
+
+        return new ChatAnswerResponse(response.answer(), sources);
     }
 
     private void ingestForSearch(Document document, MultipartFile file) {

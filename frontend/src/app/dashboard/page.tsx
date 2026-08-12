@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/auth-context";
-import { api, ApiError, DocumentSummary, SearchResult } from "@/lib/api";
+import { api, ApiError, ChatAnswer, DocumentSummary, SearchResult } from "@/lib/api";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -72,6 +72,78 @@ function SearchPanel() {
             ))}
           </ul>
         )
+      )}
+    </div>
+  );
+}
+
+function ChatPanel() {
+  const [query, setQuery] = useState("");
+  const [answer, setAnswer] = useState<ChatAnswer | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    setError(null);
+    setAsking(true);
+    setAnswer(null);
+
+    try {
+      setAnswer(await api.chat(query));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Chat failed");
+    } finally {
+      setAsking(false);
+    }
+  }
+
+  return (
+    <div className="w-full max-w-2xl space-y-4">
+      <h2 className="text-lg font-semibold">Ask your documents</h2>
+
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          type="text"
+          placeholder="Ask a question about your documents..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+        />
+        <button
+          type="submit"
+          disabled={asking}
+          className="rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+        >
+          {asking ? "Thinking..." : "Ask"}
+        </button>
+      </form>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {answer && (
+        <div className="space-y-3 rounded-md border border-gray-200 px-4 py-3 text-sm">
+          <p className="whitespace-pre-wrap">{answer.answer}</p>
+
+          {answer.sources.length > 0 && (
+            <div className="border-t border-gray-100 pt-2">
+              <p className="text-xs font-medium text-gray-500">Sources</p>
+              <ul className="mt-1 space-y-1">
+                {answer.sources.map((source, i) => (
+                  <li
+                    key={`${source.documentId}-${source.chunkIndex}-${i}`}
+                    className="flex items-center justify-between text-xs text-gray-500"
+                  >
+                    <span>{source.filename}</span>
+                    <span>{source.score.toFixed(3)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -197,6 +269,7 @@ export default function DashboardPage() {
 
       <DocumentsPanel />
       <SearchPanel />
+      <ChatPanel />
     </div>
   );
 }

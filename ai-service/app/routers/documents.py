@@ -8,6 +8,7 @@ from app.chunking import chunk_text
 from app.config import settings
 from app.embeddings import embed
 from app.qdrant import client
+from app.retrieval import retrieve_chunks
 
 router = APIRouter(prefix="/api")
 
@@ -66,13 +67,7 @@ class SearchResponse(BaseModel):
 
 @router.post("/search", response_model=SearchResponse)
 def search(request: SearchRequest) -> SearchResponse:
-    [query_vector] = embed([request.query])
-
-    hits = client.query_points(
-        collection_name=settings.qdrant_collection,
-        query=query_vector,
-        limit=request.top_k,
-    ).points
+    hits = retrieve_chunks(request.query, request.top_k)
 
     return SearchResponse(
         results=[

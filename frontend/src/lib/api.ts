@@ -73,6 +73,18 @@ export interface SearchResult {
   score: number;
 }
 
+export interface ChatSource {
+  documentId: string;
+  filename: string;
+  chunkIndex: number;
+  score: number;
+}
+
+export interface ChatAnswer {
+  answer: string;
+  sources: ChatSource[];
+}
+
 async function uploadDocument(file: File): Promise<DocumentSummary> {
   const token = getToken();
   const formData = new FormData();
@@ -115,4 +127,6 @@ export const api = {
 
   searchDocuments: (query: string) =>
     request<SearchResult[]>(`/api/documents/search?q=${encodeURIComponent(query)}`),
+
+  chat: (query: string) => request<ChatAnswer>(`/api/chat?q=${encodeURIComponent(query)}`),
 };
