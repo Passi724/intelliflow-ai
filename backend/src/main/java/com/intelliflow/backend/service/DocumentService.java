@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,6 +25,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final FileStorageService fileStorageService;
     private final AiServiceClient aiServiceClient;
+    private final TextExtractor textExtractor;
 
     public DocumentResponse upload(MultipartFile file, User uploader) {
         if (file.isEmpty()) {
@@ -72,13 +72,15 @@ public class DocumentService {
     }
 
     private void ingestForSearch(Document document, MultipartFile file) {
-        // Best-effort UTF-8 decode; only meaningful for text-like uploads until a
-        // proper per-content-type extractor (PDF, DOCX, ...) is added.
         String text;
         try {
-            text = new String(file.getBytes(), StandardCharsets.UTF_8);
+            text = textExtractor.extract(file);
         } catch (IOException e) {
-            log.warn("Could not read bytes for document {} to index for search", document.getId());
+            log.warn("Could not extract text for document {} to index for search", document.getId());
+            return;
+        }
+
+        if (text.isBlank()) {
             return;
         }
 
