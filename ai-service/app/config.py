@@ -1,9 +1,4 @@
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-# Populates os.environ from .env so unprefixed vars (e.g. ANTHROPIC_API_KEY,
-# read directly by the anthropic SDK) are visible outside this Settings model.
-load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -11,6 +6,10 @@ class Settings(BaseSettings):
 
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "intelliflow-documents"
+
+    # Local model served by Ollama - free, no API key, runs on this machine.
+    ollama_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3.2:3b"
 
 
 settings = Settings()

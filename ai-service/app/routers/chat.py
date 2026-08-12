@@ -1,20 +1,11 @@
-from functools import lru_cache
-
-from anthropic import Anthropic
+import httpx
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from app.config import settings
 from app.retrieval import retrieve_chunks
 
 router = APIRouter(prefix="/api")
-
-
-@lru_cache(maxsize=1)
-def _anthropic_client() -> Anthropic:
-    # Constructed lazily so a missing ANTHROPIC_API_KEY only breaks /api/chat,
-    # not the whole service at startup.
-    return Anthropic()
-
 
 SYSTEM_PROMPT = (
     "You are a knowledge assistant for IntelliFlow AI. Answer the user's question "
@@ -54,21 +45,23 @@ def chat(request: ChatRequest) -> ChatResponse:
         f"[Source: {hit.payload['filename']}]\n{hit.payload['text']}" for hit in hits
     )
 
-    message = _anthropic_client().messages.create(
-        model="claude-opus-5",
-        max_tokens=1024,
-        thinking={"type": "disabled"},
-        output_config={"effort": "low"},
-        system=SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Context:\n{context}\n\nQuestion: {request.query}",
-            }
-        ],
+    response = httpx.post(
+        f"{settings.ollama_url}/api/chat",
+        json={
+            "model": settings.ollama_model,
+            "stream": False,
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": f"Context:\n{context}\n\nQuestion: {request.query}",
+                },
+            ],
+        },
+        timeout=120.0,
     )
-
-    answer = next((block.text for block in message.content if block.type == "text"), "")
+    response.raise_for_status()
+    answer = response.json()["message"]["content"]
 
     return ChatResponse(
         answer=answer,
