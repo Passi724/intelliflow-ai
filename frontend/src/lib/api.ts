@@ -65,6 +65,14 @@ export interface DocumentSummary {
   createdAt: string;
 }
 
+export interface SearchResult {
+  documentId: string;
+  filename: string;
+  chunkIndex: number;
+  text: string;
+  score: number;
+}
+
 async function uploadDocument(file: File): Promise<DocumentSummary> {
   const token = getToken();
   const formData = new FormData();
@@ -104,4 +112,7 @@ export const api = {
   listDocuments: () => request<DocumentSummary[]>("/api/documents"),
 
   uploadDocument,
+
+  searchDocuments: (query: string) =>
+    request<SearchResult[]>(`/api/documents/search?q=${encodeURIComponent(query)}`),
 };

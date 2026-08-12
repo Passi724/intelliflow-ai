@@ -1,6 +1,7 @@
 package com.intelliflow.backend.controller;
 
 import com.intelliflow.backend.dto.DocumentResponse;
+import com.intelliflow.backend.dto.SearchResultResponse;
 import com.intelliflow.backend.entity.User;
 import com.intelliflow.backend.repository.UserRepository;
 import com.intelliflow.backend.service.DocumentService;
@@ -32,5 +33,10 @@ public class DocumentController {
     @GetMapping
     public List<DocumentResponse> list() {
         return documentService.listAll();
+    }
+
+    @GetMapping("/search")
+    public List<SearchResultResponse> search(@RequestParam("q") String query) {
+        return documentService.search(query);
     }
 }

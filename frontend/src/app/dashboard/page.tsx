@@ -3,12 +3,78 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/auth-context";
-import { api, ApiError, DocumentSummary } from "@/lib/api";
+import { api, ApiError, DocumentSummary, SearchResult } from "@/lib/api";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function SearchPanel() {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    setError(null);
+    setSearching(true);
+
+    try {
+      setResults(await api.searchDocuments(query));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Search failed");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  return (
+    <div className="w-full max-w-2xl space-y-4">
+      <h2 className="text-lg font-semibold">Search</h2>
+
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          type="text"
+          placeholder="Search across your documents..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+        />
+        <button
+          type="submit"
+          disabled={searching}
+          className="rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+        >
+          {searching ? "Searching..." : "Search"}
+        </button>
+      </form>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {results !== null && (
+        results.length === 0 ? (
+          <p className="text-sm text-gray-500">No matches found.</p>
+        ) : (
+          <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+            {results.map((result, i) => (
+              <li key={`${result.documentId}-${result.chunkIndex}-${i}`} className="px-4 py-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">{result.filename}</p>
+                  <span className="text-gray-500">{result.score.toFixed(3)}</span>
+                </div>
+                <p className="mt-1 text-gray-600">{result.text}</p>
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+    </div>
+  );
 }
 
 function DocumentsPanel() {
@@ -130,6 +196,7 @@ export default function DashboardPage() {
       </div>
 
       <DocumentsPanel />
+      <SearchPanel />
     </div>
   );
 }
