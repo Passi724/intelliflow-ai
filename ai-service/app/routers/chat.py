@@ -31,6 +31,26 @@ class ChatResponse(BaseModel):
     sources: list[ChatSource]
 
 
+def _generate(messages: list[dict]) -> str:
+    if settings.llm_provider == "groq":
+        response = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {settings.groq_api_key}"},
+            json={"model": settings.groq_model, "messages": messages},
+            timeout=60.0,
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+
+    response = httpx.post(
+        f"{settings.ollama_url}/api/chat",
+        json={"model": settings.ollama_model, "stream": False, "messages": messages},
+        timeout=120.0,
+    )
+    response.raise_for_status()
+    return response.json()["message"]["content"]
+
+
 @router.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
     hits = retrieve_chunks(request.query, request.top_k)
@@ -45,23 +65,15 @@ def chat(request: ChatRequest) -> ChatResponse:
         f"[Source: {hit.payload['filename']}]\n{hit.payload['text']}" for hit in hits
     )
 
-    response = httpx.post(
-        f"{settings.ollama_url}/api/chat",
-        json={
-            "model": settings.ollama_model,
-            "stream": False,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": f"Context:\n{context}\n\nQuestion: {request.query}",
-                },
-            ],
-        },
-        timeout=120.0,
+    answer = _generate(
+        [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": f"Context:\n{context}\n\nQuestion: {request.query}",
+            },
+        ]
     )
-    response.raise_for_status()
-    answer = response.json()["message"]["content"]
 
     return ChatResponse(
         answer=answer,
