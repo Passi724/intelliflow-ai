@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { FileSearch, MessagesSquare, Sparkles, UploadCloud } from "lucide-react";
+import { FileSearch, MessagesSquare, UploadCloud } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { Card } from "@/components/ui";
 
@@ -37,19 +37,18 @@ export default function Home() {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-20 text-center">
-      <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs font-medium text-zinc-400">
-        <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-        Enterprise knowledge assistant
+      <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--muted)]">
+        For Passi employees only
       </div>
 
-      <h1 className="mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-zinc-50 sm:text-5xl">
-        Ask your company&apos;s knowledge{" "}
-        <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-          anything
-        </span>
+      <h1
+        style={{ fontFamily: "var(--font-serif)" }}
+        className="mt-6 max-w-2xl text-4xl font-medium tracking-tight text-[var(--foreground)] sm:text-5xl"
+      >
+        Ask your company&apos;s knowledge, <span className="italic text-[var(--accent)]">anything</span>
       </h1>
 
-      <p className="mt-4 max-w-md text-base text-zinc-400">
+      <p className="mt-4 max-w-md text-base text-[var(--muted)]">
         Upload, search, and chat with your documents — powered by semantic search and
         grounded answers.
       </p>
@@ -57,13 +56,13 @@ export default function Home() {
       <div className="mt-8 flex gap-3">
         <Link
           href="/register"
-          className="inline-flex items-center justify-center rounded-lg bg-indigo-500 px-5 py-2.5 text-sm font-medium text-white shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset] transition-colors hover:bg-indigo-400"
+          className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)]"
         >
           Get started
         </Link>
         <Link
           href="/login"
-          className="inline-flex items-center justify-center rounded-lg border border-white/12 bg-white/[0.03] px-5 py-2.5 text-sm font-medium text-zinc-100 transition-colors hover:bg-white/[0.07]"
+          className="inline-flex items-center justify-center rounded-lg border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-2.5 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--surface-hover)]"
         >
           Log in
         </Link>
@@ -72,11 +71,11 @@ export default function Home() {
       <div className="mt-16 grid w-full max-w-3xl gap-4 sm:grid-cols-3">
         {FEATURES.map(({ icon: Icon, title, description }) => (
           <Card key={title} className="p-5 text-left">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/15">
-              <Icon className="h-4.5 w-4.5 text-indigo-400" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-soft)]">
+              <Icon className="h-4.5 w-4.5 text-[var(--accent)]" />
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-zinc-100">{title}</h3>
-            <p className="mt-1 text-sm text-zinc-500">{description}</p>
+            <h3 className="mt-3 text-sm font-semibold text-[var(--foreground)]">{title}</h3>
+            <p className="mt-1 text-sm text-[var(--muted)]">{description}</p>
           </Card>
         ))}
       </div>

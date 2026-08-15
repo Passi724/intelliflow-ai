@@ -37,11 +37,18 @@ export default function RegisterPage() {
     <div className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/15">
-            <UserPlus className="h-4.5 w-4.5 text-indigo-400" />
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)]">
+            <UserPlus className="h-4.5 w-4.5 text-[var(--accent)]" />
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-zinc-50">Create an account</h1>
-          <p className="mt-1 text-sm text-zinc-500">Get started with IntelliFlow AI</p>
+          <h1
+            style={{ fontFamily: "var(--font-serif)" }}
+            className="mt-4 text-2xl font-medium text-[var(--foreground)]"
+          >
+            Create an account
+          </h1>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            For Passi employees — use your @passi.com email
+          </p>
         </div>
 
         <Card className="p-6">
@@ -65,6 +72,7 @@ export default function RegisterPage() {
                 type="email"
                 required
                 autoComplete="email"
+                placeholder="you@passi.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -81,11 +89,11 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <p className="mt-1.5 text-xs text-zinc-600">At least 8 characters</p>
+              <p className="mt-1.5 text-xs text-[var(--muted-dim)]">At least 8 characters</p>
             </div>
 
             {error && (
-              <p className="rounded-lg border border-red-400/20 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+              <p className="rounded-lg border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger)]">
                 {error}
               </p>
             )}
@@ -96,9 +104,9 @@ export default function RegisterPage() {
           </form>
         </Card>
 
-        <p className="mt-6 text-center text-sm text-zinc-500">
+        <p className="mt-6 text-center text-sm text-[var(--muted)]">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-indigo-400 hover:text-indigo-300">
+          <Link href="/login" className="font-medium text-[var(--accent)] hover:text-[var(--accent-hover)]">
             Log in
           </Link>
         </p>
