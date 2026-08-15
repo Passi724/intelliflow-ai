@@ -2,8 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import {
+  FileText,
+  LogOut,
+  MessageSquare,
+  Search,
+  Send,
+  Sparkles,
+  UploadCloud,
+} from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { api, ApiError, ChatAnswer, DocumentSummary, SearchResult } from "@/lib/api";
+import { Button, Card, Input, ScorePill, Spinner } from "@/components/ui";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -34,46 +44,47 @@ function SearchPanel() {
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-4">
-      <h2 className="text-lg font-semibold">Search</h2>
+    <Card className="p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <Search className="h-4 w-4 text-indigo-400" />
+        <h2 className="text-sm font-semibold text-zinc-100">Search</h2>
+      </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
+        <Input
           type="text"
           placeholder="Search across your documents..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+          className="flex-1"
         />
-        <button
-          type="submit"
-          disabled={searching}
-          className="rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-        >
-          {searching ? "Searching..." : "Search"}
-        </button>
+        <Button type="submit" loading={searching}>
+          {searching ? "" : "Search"}
+        </Button>
       </form>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
 
       {results !== null && (
-        results.length === 0 ? (
-          <p className="text-sm text-gray-500">No matches found.</p>
-        ) : (
-          <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
-            {results.map((result, i) => (
-              <li key={`${result.documentId}-${result.chunkIndex}-${i}`} className="px-4 py-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">{result.filename}</p>
-                  <span className="text-gray-500">{result.score.toFixed(3)}</span>
-                </div>
-                <p className="mt-1 text-gray-600">{result.text}</p>
-              </li>
-            ))}
-          </ul>
-        )
+        <div className="mt-4">
+          {results.length === 0 ? (
+            <p className="text-sm text-zinc-500">No matches found.</p>
+          ) : (
+            <ul className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.06]">
+              {results.map((result, i) => (
+                <li key={`${result.documentId}-${result.chunkIndex}-${i}`} className="px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="truncate text-sm font-medium text-zinc-200">{result.filename}</p>
+                    <ScorePill score={result.score} />
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-sm text-zinc-500">{result.text}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -101,43 +112,51 @@ function ChatPanel() {
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-4">
-      <h2 className="text-lg font-semibold">Ask your documents</h2>
+    <Card className="p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <MessageSquare className="h-4 w-4 text-indigo-400" />
+        <h2 className="text-sm font-semibold text-zinc-100">Ask your documents</h2>
+      </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
+        <Input
           type="text"
           placeholder="Ask a question about your documents..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+          className="flex-1"
         />
-        <button
-          type="submit"
-          disabled={asking}
-          className="rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-        >
-          {asking ? "Thinking..." : "Ask"}
-        </button>
+        <Button type="submit" loading={asking}>
+          {asking ? "" : <Send className="h-4 w-4" />}
+        </Button>
       </form>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+
+      {asking && !answer && (
+        <div className="mt-4 flex items-center gap-2 text-sm text-zinc-500">
+          <Spinner /> Thinking...
+        </div>
+      )}
 
       {answer && (
-        <div className="space-y-3 rounded-md border border-gray-200 px-4 py-3 text-sm">
-          <p className="whitespace-pre-wrap">{answer.answer}</p>
+        <div className="mt-4 space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="flex items-start gap-2">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
+            <p className="whitespace-pre-wrap text-sm text-zinc-200">{answer.answer}</p>
+          </div>
 
           {answer.sources.length > 0 && (
-            <div className="border-t border-gray-100 pt-2">
-              <p className="text-xs font-medium text-gray-500">Sources</p>
-              <ul className="mt-1 space-y-1">
+            <div className="border-t border-white/[0.06] pt-3">
+              <p className="text-xs font-medium text-zinc-500">Sources</p>
+              <ul className="mt-1.5 space-y-1.5">
                 {answer.sources.map((source, i) => (
                   <li
                     key={`${source.documentId}-${source.chunkIndex}-${i}`}
-                    className="flex items-center justify-between text-xs text-gray-500"
+                    className="flex items-center justify-between gap-3 text-xs text-zinc-500"
                   >
-                    <span>{source.filename}</span>
-                    <span>{source.score.toFixed(3)}</span>
+                    <span className="truncate">{source.filename}</span>
+                    <ScorePill score={source.score} />
                   </li>
                 ))}
               </ul>
@@ -145,7 +164,7 @@ function ChatPanel() {
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -189,11 +208,17 @@ function DocumentsPanel() {
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Documents</h2>
-        <label className="cursor-pointer rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50">
-          {uploading ? "Uploading..." : "Upload document"}
+    <Card className="p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-indigo-400" />
+          <h2 className="text-sm font-semibold text-zinc-100">Documents</h2>
+        </div>
+        <label>
+          <span className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset] transition-colors hover:bg-indigo-400 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
+            {uploading ? <Spinner /> : <UploadCloud className="h-4 w-4" />}
+            {uploading ? "Uploading..." : "Upload"}
+          </span>
           <input
             ref={fileInputRef}
             type="file"
@@ -204,28 +229,38 @@ function DocumentsPanel() {
         </label>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
 
       {loadingDocuments ? (
-        <p className="text-sm text-gray-500">Loading documents...</p>
+        <div className="flex items-center gap-2 py-6 text-sm text-zinc-500">
+          <Spinner /> Loading documents...
+        </div>
       ) : documents.length === 0 ? (
-        <p className="text-sm text-gray-500">No documents uploaded yet.</p>
+        <div className="flex flex-col items-center gap-2 py-8 text-center">
+          <FileText className="h-6 w-6 text-zinc-700" />
+          <p className="text-sm text-zinc-500">No documents uploaded yet.</p>
+        </div>
       ) : (
-        <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+        <ul className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.06]">
           {documents.map((doc) => (
-            <li key={doc.id} className="flex items-center justify-between px-4 py-3 text-sm">
-              <div>
-                <p className="font-medium">{doc.filename}</p>
-                <p className="text-gray-500">
+            <li key={doc.id} className="flex items-center gap-3 px-4 py-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]">
+                <FileText className="h-4 w-4 text-zinc-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-zinc-200">{doc.filename}</p>
+                <p className="truncate text-xs text-zinc-500">
                   {doc.uploadedByEmail} &middot; {new Date(doc.createdAt).toLocaleString()}
                 </p>
               </div>
-              <span className="text-gray-500">{formatSize(doc.sizeBytes)}</span>
+              <span className="shrink-0 text-xs text-zinc-500 tabular-nums">
+                {formatSize(doc.sizeBytes)}
+              </span>
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -242,34 +277,39 @@ export default function DashboardPage() {
   if (loading || !user) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-gray-500">Loading...</p>
+        <Spinner className="h-5 w-5 text-zinc-500" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center gap-8 px-4 py-10">
-      <div className="flex w-full max-w-2xl items-center justify-between">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-10">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Welcome, {user.fullName}</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-zinc-50">Welcome, {user.fullName}</h1>
+          <p className="mt-1 text-sm text-zinc-500">
             {user.email} &middot; {user.role}
           </p>
         </div>
-        <button
+        <Button
+          variant="secondary"
           onClick={() => {
             logout();
             router.push("/login");
           }}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
         >
+          <LogOut className="h-4 w-4" />
           Log out
-        </button>
+        </Button>
       </div>
 
-      <DocumentsPanel />
-      <SearchPanel />
-      <ChatPanel />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="lg:row-span-2">
+          <DocumentsPanel />
+        </div>
+        <SearchPanel />
+        <ChatPanel />
+      </div>
     </div>
   );
 }

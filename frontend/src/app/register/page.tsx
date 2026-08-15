@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { UserPlus } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { ApiError } from "@/lib/api";
+import { Button, Card, Input, Label } from "@/components/ui";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,75 +34,71 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold">Create an account</h1>
-          <p className="mt-1 text-sm text-gray-500">Get started with IntelliFlow AI</p>
+    <div className="flex flex-1 items-center justify-center px-4 py-16">
+      <div className="w-full max-w-sm">
+        <div className="mb-6 text-center">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/15">
+            <UserPlus className="h-4.5 w-4.5 text-indigo-400" />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold text-zinc-50">Create an account</h1>
+          <p className="mt-1 text-sm text-zinc-500">Get started with IntelliFlow AI</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium">
-              Full name
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              required
-              autoComplete="name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
-            />
-          </div>
+        <Card className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="fullName">Full name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                required
+                autoComplete="name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
-            />
-          </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              autoComplete="new-password"
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
-            />
-            <p className="mt-1 text-xs text-gray-500">At least 8 characters</p>
-          </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                autoComplete="new-password"
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <p className="mt-1.5 text-xs text-zinc-600">At least 8 characters</p>
+            </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="rounded-lg border border-red-400/20 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+                {error}
+              </p>
+            )}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-          >
-            {submitting ? "Creating account..." : "Create account"}
-          </button>
-        </form>
+            <Button type="submit" loading={submitting} className="w-full">
+              {submitting ? "Creating account..." : "Create account"}
+            </Button>
+          </form>
+        </Card>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-zinc-500">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-black underline">
+          <Link href="/login" className="font-medium text-indigo-400 hover:text-indigo-300">
             Log in
           </Link>
         </p>
